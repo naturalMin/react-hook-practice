@@ -1,22 +1,22 @@
 import "./styles.css";
 import { useState, useEffect } from "react";
 
+const useTitle = (initialTitle) => {
+  const [title, setTitle] = useState(initialTitle);
+  const updateTitle = () => {
+    const htmlTitle = document.querySelector("title");
+    htmlTitle.innerText = title;
+  };
+  useEffect(updateTitle, [title]); //title이 업데이트되면 updateTitle호출
+  return setTitle;
+};
+
 export default function App() {
-  const sayHello = () => console.log("hello");
-  const [number, setNumber] = useState(0);
-  const [aNumber, setANumber] = useState(0);
-  useEffect(() => {
-    sayHello(); //componentDidMount // 최초에 한 번만 작동. mount = 행위자체 보여진다.
-  }, [number]); //componentDidUpdate //number가 mount될때만 호출. 한번만 호출=> []
+  const titleUpdater = useTitle("Loading..."); //브라우저 타이틀 Loading..으로 변경됨.
+  setTimeout(() => titleUpdater("Home"), 5000); //5초후 브라우저 타이틀 Home으로 변경
   return (
     <div className="App">
       <div>Hi</div>
-      <button onClick={() => setNumber(number + 1)}>add</button>
-      <button onClick={() => setANumber(aNumber + 1)}>add2</button>
-      <div>{number}</div>
-      {/* number만 클릭할 수록 랜더링 진행 */}
-      <div>{aNumber}</div>
-      {/* aNumber 랜더링안됨 */}
     </div>
   );
 }
