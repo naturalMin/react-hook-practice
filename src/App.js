@@ -1,34 +1,30 @@
 import "./styles.css";
 import { useState, useEffect, useRef } from "react";
 
-const useClick = (onClick) => {
-  const element = useRef();
-  useEffect(() => {
-    if (typeof onClick !== "function") {
-      return;
+const useConfirm = (message = "", callback, rejection) => {
+  if (typeof callback !== "function") {
+    return; //callback이 함수가 아니라면 그냥 리턴.
+  }
+  const confirmAction = () => {
+    if (window.confirm(message)) {
+      //confirm window창이 browser에 message를 가지고 있다면\
+      //window 추가안하면 Unexpected use of 'confirm' no-restricted-globals 에러
+      callback(); //callback 함수를 실행하라
+    } else {
+      rejection(); //그렇지 않다면 rejection을 실행하라.
+      //cancel 누르는 순간 TypeError rejection is not a function 에러발생
     }
-    if (element.current) {
-      element.current.addEventListener("click", onClick);
-    } //mount
-    return () => {
-      if (element.current) {
-        element.current.removeEventListener("click", onClick);
-      }
-    }; //unmount
-  }, []); //단 한번만 실행
-  return typeof onClick !== "function" ? element : undefined;
+  };
+  return confirmAction; //confirmAction 함수값을 리턴하라.
 };
-// React 16.8v 부터는 Hook 을 조건문, 반복문, 중첩함수 내에서 호출할 수 없습니다.
 
 export default function App() {
-  const sayHello = () => console.log("say hello");
-  const title = useClick(sayHello);
-  //const input = useRef(); //document.getElementById()와 동일
-  //setTimeout(() => input.current?.focus(), 5000); //초반에 undefined로 잡혀서 ?.처리
+  const deleteWorld = () => console.log("Deleting the world.");
+  const abort = console.log("Aborted");
+  const confirmDelete = useConfirm("Are you sure", deleteWorld, abort);
   return (
     <div className="App">
-      <h1 ref={title}>Hi</h1>
-      {/* <input ref={input} placeholder="hi" /> */}
+      <button onClick={confirmDelete}>Delete the world</button>
     </div>
   );
 }
