@@ -11,8 +11,13 @@ const useConfirm = (message = "", callback, rejection) => {
       //window 추가안하면 Unexpected use of 'confirm' no-restricted-globals 에러
       callback(); //callback 함수를 실행하라
     } else {
-      rejection(); //그렇지 않다면 rejection을 실행하라.
-      //cancel 누르는 순간 TypeError rejection is not a function 에러발생
+      try {
+        rejection(); //그렇지 않다면 rejection을 실행하라.
+        //cancel 누르는 순간 TypeError rejection is not a function 에러발생
+      } catch {
+        return; //typeError 해결: 예외문 작성.
+        //rejection이 필수가 아니라 rejection이 없는 경우에도 Cancel 누르면 실행 될건데 예외 발생으로 프로그램 터질 겁니다.
+      }
     }
   };
   return confirmAction; //confirmAction 함수값을 리턴하라.
