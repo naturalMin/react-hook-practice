@@ -1,28 +1,33 @@
 import "./styles.css";
 import { useState, useEffect, useRef } from "react";
 
-const useFadeIn = (duration = 1, delay = 0) => {
-  if (typeof duration !== "number" || typeof delay !== "number") {
-    return;
-  }
-  const element = useRef(); //html element target
-  useEffect(() => {
-    if (element.current) {
-      const { current } = element;
-      current.style.transition = `opacity ${duration}s ease-in-out ${delay}s`;
-      current.style.opacity = 1;
+const useNetwork = (onChange) => {
+  const [status, setStatus] = useState(navigator.onLine);
+  //navigator.onLine = 웹사이트 온라인인지 여부(true or false)
+  const handleChange = () => {
+    if (typeof onChange === "function") {
+      setStatus(navigator.onLine); //온,오프라인 상태 변화
     }
-  }, []); //element 내부에서만 이뤄지기 위해 useEffect 사용
-  return { ref: element, style: { opacity: 0 } };
+  };
+  useEffect(() => {
+    window.addEventListener("online", handleChange);
+    window.addEventListener("offline", handleChange);
+    () => {
+      window.removeEventListener("online", handleChange);
+      window.removeEventListener("offline", handleChange);
+    }; //clean up
+  }, []);
+  return status;
 };
 
 export default function App() {
-  const fadeInH1 = useFadeIn(2);
-  const fadeInP = useFadeIn(5, 1);
+  const handleNetworkChange = (online) => {
+    console.log(online ? "we just went online" : "we are offline");
+  };
+  const onLine = useNetwork(handleNetworkChange);
   return (
     <div className="App">
-      <h1 {...fadeInH1}>Hello</h1>
-      <p {...fadeInP}>lorem ipsum</p>
+      <h1>{onLine ? "OnLine" : "OffLine"}</h1>
     </div>
   );
 }
