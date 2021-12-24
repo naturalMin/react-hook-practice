@@ -1,24 +1,31 @@
 import "./styles.css";
 import { useState, useEffect, useRef } from "react";
 
-const usePreventLeave = () => {
-  const listener = (event) => {
-    event.preventDefault();
-    event.returnValue = ""; //요즘은 Deprecated
+const useBeforeLeave = (onBefore) => {
+  if (typeof onBefore !== "function") {
+    return;
+  }
+  const handle = (event) => {
+    const { clientY } = event; //clientY: 마우스 위치 위아래 체크
+    if (clientY <= 0) {
+      //마우스 위로 벗어날 때마다 경고표시
+      onBefore();
+    }
   };
-  const enablePrevent = () => window.addEventListener("beforeunload", listener);
-  // 정말로 이 사이트를 나갈꺼냐? 재확인 질문해줌. 보호역할
-  const disablePrevent = () =>
-    window.removeEventListener("beforeunload", listener);
-  return { enablePrevent, disablePrevent };
+  useEffect(() => {
+    document.addEventListener("mouseleave", handle);
+    return () => {
+      document.removeEventListener("mouseleave", handle);
+    };
+  }, []);
 };
 
 export default function App() {
-  const { enablePrevent, disablePrevent } = usePreventLeave();
+  const begForLife = () => console.log("Pls dont leave");
+  useBeforeLeave(begForLife);
   return (
     <div className="App">
-      <button onClick={enablePrevent}>Protect</button>
-      <button onClick={disablePrevent}>Unprotect</button>
+      <h1>Hello</h1>
     </div>
   );
 }
