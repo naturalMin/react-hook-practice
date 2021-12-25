@@ -1,26 +1,43 @@
 import "./styles.css";
 import { useState, useEffect, useRef } from "react";
 
-const useScroll = () => {
-  const [state, setState] = useState({
-    x: 0,
-    y: 0
-  });
-  const onScroll = () => {
-    setState({ y: window.scrollY, x: window.screenX });
+const useFullscreen = (callback) => {
+  const element = useRef();
+  const triggerFull = () => {
+    if (element.current) {
+      element.current.requestFullscreen(); //전체화면으로 변화
+      if (callback && typeof callback === "function") {
+        callback(true);
+      }
+    }
   };
-  useEffect(() => {
-    window.addEventListener("scroll", onScroll);
-    return () => window.removeEventListener("scroll", onScroll);
-  }, []);
-  return state;
+  const exitFull = () => {
+    const checkFullscr = document.fullscreenElement;
+    if (checkFullscr !== null) {
+      //전체화면 풀사이즈인 경우 체크안하면 오류뜸
+      document.exitFullscreen(); //풀사이즈 해제
+      if (callback && typeof callback === "function") {
+        callback(false);
+      }
+    }
+  };
+  return { element, triggerFull, exitFull };
 };
 
 export default function App() {
-  const { y } = useScroll();
+  const [openExitBtn, SetOpenExitBtn] = useState(false);
+  const onFulls = (isFull) => {
+    console.log(isFull ? "We are full" : "We are small");
+    SetOpenExitBtn(isFull); //전체화면일때만 버튼 보이게 함
+  }; //callback 함수 적용
+  const { element, triggerFull, exitFull } = useFullscreen(onFulls);
   return (
-    <div className="App" style={{ height: "200vh" }}>
-      <h1 style={{ position: "fixed", color: y > 100 ? "red" : "blue" }}>Hi</h1>
+    <div className="App">
+      <div ref={element}>
+        <img src="https://cdn.pixabay.com/photo/2020/12/01/10/04/dog-5793625_960_720.jpg" />
+        {openExitBtn && <button onClick={exitFull}>Exit fullscreen</button>}
+      </div>
+      <button onClick={triggerFull}>Make fullscreen</button>
     </div>
   );
 }
